@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesin Kasir Sederhana</title>
+<style>
+.body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+}
+
+.h2 {
+    text-align: center;
+    color: #333;
+}
+
+.form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form input[type="text"],
+form input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form button:hover {
+    background-color: #45a049;
+}
+
+#container {
+    margin-top: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.table th {
+    background-color: #f2f2f2;
+}
+
+.button.beliLagi {
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 10px 20px;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+.button.beliLagi:hover {
+    background-color: #005f76;
+}
+</style>
+</head>
+<body>
+
+<h2>Mesin Kasir Sederhana</h2>
+
+<form id="formInput">
+    <label for="namaBarang">Nama Barang:</label>
+    <input type="text" id="namaBarang" required><br>
+
+    <label for="hargaBarang">Harga Barang:</label>
+    <input type="number" id="hargaBarang" required><br>
+
+    <label for="jumlahBarang">Jumlah Barang:</label>
+    <input type="number" id="jumlahBarang" required><br>
+
+    <label for="uangPembayaran">Uang Pembayaran:</label>
+    <input type="number" id="uangPembayaran" required><br>
+
+    <button type="submit">Hitung Total</button>
+</form>
+
+<div id="container"></div>
+
+<script>
+// Variabel untuk menyimpan detail barang
+var daftarBarang = [];
+var totalHargaKeseluruhan = 0;
+var totalPembayaran = 0;
+
+// Menangani pengiriman form
+document.getElementById("formInput").addEventListener("submit", function(event) {
+    event.preventDefault(); // Mencegah reload halaman
+
+    var namaBarang = document.getElementById("namaBarang").value;
+    var hargaBarang = parseFloat(document.getElementById("hargaBarang").value);
+    var jumlahBarang = parseInt(document.getElementById("jumlahBarang").value);
+    var uangPembayaran = parseFloat(document.getElementById("uangPembayaran").value);
+
+    if (namaBarang === "" || isNaN(hargaBarang) || isNaN(jumlahBarang) || isNaN(uangPembayaran)) {
+        alert("Silakan isi semua kolom!");
+        return;
+    }
+
+    var totalHarga = hargaBarang * jumlahBarang;
+    var kembalian = uangPembayaran - totalHarga;
+
+    if (kembalian < 0) {
+        alert("Maaf, uang pembayaran tidak mencukupi!");
+        return;
+    }
+
+    // Menambahkan detail barang ke dalam array
+    var barang = {
+        nama: namaBarang,
+        harga: hargaBarang,
+        jumlah: jumlahBarang,
+        total: totalHarga,
+        pembayaran: uangPembayaran,
+        kembalian: kembalian
+    };
+    daftarBarang.push(barang);
+
+    // Menghitung total harga keseluruhan, total pembayaran, dan total kembalian
+    totalHargaKeseluruhan += totalHarga;
+    totalPembayaran += uangPembayaran;
+    var totalKembalian = totalPembayaran - totalHargaKeseluruhan;
+
+    // Menampilkan bukti pembayaran
+    tampilkanBuktiPembayaran();
+
+    // Mengosongkan form
+    event.target.reset();
+});
+
+// Fungsi untuk menampilkan bukti pembayaran
+function tampilkanBuktiPembayaran() {
+    var container = document.getElementById("container");
+
+    // Membersihkan container
+    container.innerHTML = '';
+
+    // Membuat tabel untuk menampilkan detail setiap barang
+    var tabelHTML = `
+        <h3>Bukti Pembayaran</h3>
+        <table>
+            <tr>
+                <th>Nama Barang</th>
+                <th>Harga Barang</th>
+                <th>Jumlah Barang</th>
+                <th>Total Harga</th>
+            </tr>
+    `;
+    daftarBarang.forEach(function(item) {
+        tabelHTML += `
+            <tr>
+                <td>${item.nama}</td>
+                <td>Rp ${item.harga}</td>
+                <td>${item.jumlah}</td>
+                <td>Rp ${item.total.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    tabelHTML += `
+            <tr>
+                <td colspan="3"><strong>Total Harga Keseluruhan:</strong></td>
+                <td><strong>Rp ${totalHargaKeseluruhan.toFixed(2)}</strong></td>
+            </tr>
+            <tr>
+                <td colspan="3"><strong>Total Pembayaran:</strong></td>
+                <td><strong>Rp ${totalPembayaran.toFixed(2)}</strong></td>
+            </tr>
+    `;
+    // Menampilkan tabel
+    container.innerHTML = tabelHTML;
+
+    // Tampilkan tombol "Beli Lagi"
+    container.innerHTML += `
+        <button class="beliLagi" onclick="beliLagi()">Beli Lagi</button>
+    `;
+}
+
+// Fungsi untuk memulai belanja lagi
+function beliLagi() {
+    var container = document.getElementById("container");
+    container.innerHTML = ""; // Mengosongkan container
+
+    // Mengembalikan form ke keadaan awal
+    document.getElementById("formInput").reset();
+}
+</script>
+
+</body>
+</html>
